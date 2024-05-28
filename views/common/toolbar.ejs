@@ -1,13 +1,12 @@
 <header class="navbar bg-base-300 shadow-lg w-[100svw]">
   <div class="navbar-start gap-2">
-    <label for=<%= sidebarId %> class="btn rounded-full btn-ghost"><i
-          class="fa-solid fa-bars fa-lg"></i></label>
+    <label for=<%= sidebarId %> class="btn rounded-full btn-ghost"><i class="fa-solid fa-bars fa-lg"></i></label>
     <h1 class="select-none"><%= title %></h1>
   </div>
   <div class="navbar-center">
 
   </div>
   <div class="navbar-end">
-    <% include('components/user-badge', {userInfo}) %>
+    <% include('../components/user-badge', {userInfo}) %>
   </div>
 </header>

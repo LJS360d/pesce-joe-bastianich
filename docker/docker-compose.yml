@@ -1,19 +1,19 @@
 version: '3'
 services:
-  mongodb:
-    container_name: $COMPOSE_PROJECT_NAME-mongo
-    image: mongo:latest
-    restart: always
+  postgres:
+    image: postgres:${POSTGRES_VERSION}
+    restart: unless-stopped
+    container_name: $COMPOSE_PROJECT_NAME-postgres
     ports:
-      - '0.0.0.0:$MONGO_EXTERNAL_PORT:$MONGO_INTERNAL_PORT'
+      - 0.0.0.0:$POSTGRES_EXTERNAL_PORT:$POSTGRES_INTERNAL_PORT
     environment:
-      MONGO_INITDB_ROOT_DATABASE: $MONGO_DATABASE
-      MONGO_INITDB_ROOT_USERNAME: $MONGO_USERNAME
-      MONGO_INITDB_ROOT_PASSWORD: $MONGO_PASSWORD
+      POSTGRES_DB: $POSTGRES_DATABASE
+      POSTGRES_USER: $POSTGRES_USERNAME
+      POSTGRES_PASSWORD: $POSTGRES_PASSWORD
   node:
     container_name: $COMPOSE_PROJECT_NAME-node
     image: node:${NODE_VERSION}-alpine
-    restart: always
+    restart: no
     ports:
       - 0.0.0.0:$NODE_EXTERNAL_PORT:$NODE_INTERNAL_PORT
     volumes:

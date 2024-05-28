@@ -1,4 +1,5 @@
 import ejs from 'ejs';
+import { join } from 'node:path';
 import env from '../../env';
 import type { Props, RenderOptions } from './render.options';
 import { ThemesIterator } from './themes';
@@ -16,7 +17,7 @@ export async function render(
 	options?: Partial<RenderOptions>
 ) {
 	options = { ...defaultOptions, ...options };
-	const filepath = 'views/index.ejs';
+	const filepath = join(process.cwd(), 'views/index.ejs');
 	try {
 		const content = await ejs.renderFile(
 			filepath,
@@ -29,7 +30,8 @@ export async function render(
 		);
 		return content;
 	} catch (error) {
-		return JSON.stringify(error, null, 2);
+		console.error(error);
+		return error;
 	}
 }
 

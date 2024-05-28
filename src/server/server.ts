@@ -32,7 +32,7 @@ export class StarterKitServer extends Fonzi2Server {
 		const options = {
 			userInfo,
 		};
-		const content = await render('dashboard', props, options);
+		const content = await render('pages/dashboard', props, options);
 		res.status(200).send(content);
 		return;
 	}

@@ -45,11 +45,11 @@ const options: ClientOptions = {
 		Logger.trace(JSON.stringify(obj, null, 2));
 		return obj;
 	},
-	presence: {
+	/* presence: {
 		activities: [{ name: 'a dumb dev', type: ActivityType.Watching }],
 		afk: false,
 		status: 'online',
-	},
+	}, */
 };
 
 export default options;

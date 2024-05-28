@@ -6,21 +6,18 @@
         <%= client.user.tag%>
       </h1>
     </a>
-    <%- include('components/user-badge', { userInfo })%>
+    <%- include('../components/user-badge', { userInfo })%>
   </header>
   <hr class="my-4">
   <span class="text-sm">Uptime: <b id="uptime" start=<%=startTime%>></b></span>
   <br>
   <span class="text-sm">Currently part of <b><%=guilds.size%></b> guilds</span>
-  <ul
-      class="list-none overflow-y-auto overflow-x-hidden flex flex-wrap gap-2 h-75vh">
+  <ul class="list-none overflow-y-auto overflow-x-hidden flex flex-wrap gap-2 h-75vh">
     <% guilds.forEach((guild)=> { %>
-    <li
-        class="bg-white p-2 rounded-md shadow-2xl flex items-center justify-between">
+    <li class="bg-white p-2 rounded-md shadow-2xl flex items-center justify-between">
       <div class="flex flex-col items-center">
         <span class="text-black text-sm"><%= guild.name %></span>
-        <img class="rounded-full h-20" src="<%=guild.iconURL()%>"
-            alt="guild icon">
+        <img class="rounded-full h-20" src="<%=guild.iconURL()%>" alt="guild icon">
         <span class="text-black text-sm"><%= guild.memberCount%> members</span>
       </div>
     </li>

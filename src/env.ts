@@ -16,5 +16,7 @@ const env = {
 	PORT: Number(process.env['PORT']) || 8080,
 	// * the current environment (default: development)
 	NODE_ENV: process.env['NODE_ENV'] || 'development',
+	// ! [REQUIRED] Postgres URL
+	POSTGRES_URL: process.env['POSTGRES_URL']!,
 } as const;
 export default env;
