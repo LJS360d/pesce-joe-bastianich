@@ -19,3 +19,7 @@ export async function connectPostgres(
 		return;
 	}
 }
+
+export class Database {
+	constructor(public instance: NodePgDatabase) {}
+}

@@ -15,7 +15,10 @@
 		"build": "webpack --config webpack.config.cjs --mode production",
 		"start": "cross-env NODE_ENV=production node dist/bundle.js",
 		"lint": "biome check ./src ./views && tsc",
-		"lint:fix": "biome check --apply-unsafe ./src ./views"
+		"lint:fix": "biome check --apply-unsafe ./src ./views",
+		"drizzle": "drizzle-kit push",
+		"drizzle:gen": "drizzle-kit generate",
+		"drizzle:mig": "drizzle-kit migrate"
 	},
 	"keywords": [],
 	"author": "",
@@ -28,7 +31,8 @@
 		"ejs": "^3.1.10",
 		"express": "^4.19.2",
 		"fonzi2": "^1.4.2",
-		"pg": "^8.11.5"
+		"pg": "^8.11.5",
+		"typedi": "^0.10.0"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^1.7.3",

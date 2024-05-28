@@ -32,6 +32,9 @@ importers:
       pg:
         specifier: ^8.11.5
         version: 8.11.5
+      typedi:
+        specifier: ^0.10.0
+        version: 0.10.0
     devDependencies:
       '@biomejs/biome':
         specifier: ^1.7.3
@@ -2511,6 +2514,9 @@ packages:
   type@2.7.2:
     resolution: {integrity: sha512-dzlvlNlt6AXU7EBSfpAscydQ7gXB+pPGsPnfJnZpiNJBDj7IaJzQlBZYGdEi4R9HmPdBv2XmWJ6YUtoTa7lmCw==}
 
+  typedi@0.10.0:
+    resolution: {integrity: sha512-v3UJF8xm68BBj6AF4oQML3ikrfK2c9EmZUyLOfShpJuItAqVBHWP/KtpGinkSsIiP6EZyyb6Z3NXyW9dgS9X1w==}
+
   typescript@5.4.5:
     resolution: {integrity: sha512-vcI4UpRgg81oIRUFwR0WSIHKt11nJ7SAVlYNIu+QpqeyXP+gpQJy/Z4+F0aGxSE4MqwjyXvW/TzgkLAx2AGHwQ==}
     engines: {node: '>=14.17'}
@@ -4945,6 +4951,8 @@ snapshots:
       mime-types: 2.1.35
 
   type@2.7.2: {}
+
+  typedi@0.10.0: {}
 
   typescript@5.4.5: {}
 
