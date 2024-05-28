@@ -10,6 +10,7 @@ import Container from 'typedi';
 import { Database } from '../../database/connect';
 import { SubmissionsTable } from '../../database/models/submission';
 import { isImageUrl } from '../../utils/url.utils';
+import { sql } from 'drizzle-orm';
 
 export class CommandsHandler extends DiscordHandler {
 	public readonly type = HandlerType.commandInteraction;
@@ -27,7 +28,7 @@ export class CommandsHandler extends DiscordHandler {
 
 	@Command({
 		name: 'submit',
-		description: 'returns the application version',
+		description: 'submits a new dish poll option',
 		options: [
 			{
 				name: 'image',
@@ -39,6 +40,7 @@ export class CommandsHandler extends DiscordHandler {
 				name: 'ingredients',
 				description: 'the recipe ingredients',
 				type: ApplicationCommandOptionType.String,
+				max_length: 256,
 				required: true,
 			},
 		],
@@ -52,27 +54,85 @@ export class CommandsHandler extends DiscordHandler {
 			});
 		}
 		const ingredients = interaction.options.getString('ingredients')!;
-		const submitter = interaction.user.displayName;
-		const thread = await (
-			interaction.channel as BaseGuildTextChannel
-		).threads.create({
-			name: `Dish submission - ${submitter}`,
-			type: ChannelType.PublicThread,
-		});
-		await thread.send(image);
-		await thread.send(ingredients);
+		const { displayName: submitter, id: submitterId } = interaction.user;
 		try {
-			await this.db
+			const submissions = await this.db
+				.select()
+				.from(SubmissionsTable)
+				.execute();
+			if (submissions.length >= 10) {
+				await interaction.reply({
+					content:
+						'Max submissions reached for this week, better luck next time',
+					ephemeral: true,
+				});
+			}
+			const res = await this.db
 				.insert(SubmissionsTable)
 				.values({
 					image,
 					ingredients,
 					submitter,
+					submitterId,
 				})
+				.returning()
 				.execute();
+			const submissionId = String(res.at(0)?.id ?? '?');
+			const thread = await (
+				interaction.channel as BaseGuildTextChannel
+			).threads.create({
+				name: `Dish submission - ${submitter} [${submissionId}]`,
+				type: ChannelType.PublicThread,
+			});
+			await thread.send(submissionId);
+			await thread.send(image);
+			await thread.send(ingredients);
 		} catch (error) {
 			console.error(error);
+			await interaction.reply({
+				content: 'Submission Failed',
+				ephemeral: true,
+			});
 		}
 		await interaction.reply({ content: 'Submission added!', ephemeral: true });
+	}
+
+	@Command({
+		name: 'unsubmit',
+		description: 'removes a submitted poll option',
+		options: [
+			{
+				name: 'id',
+				description: 'the submission id [in the thread name]',
+				type: ApplicationCommandOptionType.String,
+				required: true,
+			},
+		],
+	})
+	public async onUnsubmit(interaction: ChatInputCommandInteraction<'cached'>) {
+		const submissionId = interaction.options.getString('id')!;
+		try {
+			const deletedSubmissions = await this.db
+				.delete(SubmissionsTable)
+				.where(sql`${SubmissionsTable.id} = ${submissionId}`)
+				.returning()
+				.execute();
+			if (!deletedSubmissions.at(0)) {
+				await interaction.reply({
+					content: 'There was no submission with that ID',
+					ephemeral: true,
+				});
+			}
+		} catch (error) {
+			console.error(error);
+			await interaction.reply({
+				content: 'Submission removal Failed',
+				ephemeral: true,
+			});
+		}
+		await interaction.reply({
+			content: 'Submission removed!',
+			ephemeral: true,
+		});
 	}
 }
