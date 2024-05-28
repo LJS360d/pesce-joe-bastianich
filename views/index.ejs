@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="en" data-theme=<%= theme  %>>
+<%- include("common/head", { title }) -%>
+
+<body>
+  <%- include("common/sidebar", { title, userInfo }) -%>
+  <main>
+    <%- include(component, props) -%>
+  </main>
+</body>
+
+</html>
