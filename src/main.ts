@@ -2,7 +2,6 @@ import { Logger, getRegisteredCommands } from 'fonzi2';
 import { PesceJoeBastianichClient } from './client/client';
 import ClientEventsHandler from './client/handlers/client.events.handler';
 import { CommandsHandler } from './client/handlers/commands.handler';
-import { MessageHandler } from './client/handlers/message.handler';
 import { connectPostgres } from './database/connect';
 import env from './env';
 import options from './options';
@@ -10,7 +9,6 @@ import options from './options';
 async function main() {
 	const db = await connectPostgres(env.POSTGRES_URL);
 	const client = new PesceJoeBastianichClient(env.TOKEN, options, [
-		new MessageHandler(),
 		new CommandsHandler(env.VERSION),
 		new ClientEventsHandler(getRegisteredCommands()),
 	]);
