@@ -6,4 +6,6 @@ export const SubmissionsTable = pgTable('submissions', {
 	submitter: text('submitter').notNull(),
 	image: text('image').notNull(),
 	ingredients: text('ingredients').notNull(),
+	channel: text('channel').notNull(),
+	thread: text('thread').notNull(),
 });

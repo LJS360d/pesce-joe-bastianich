@@ -4,13 +4,13 @@ import {
 	type BaseGuildTextChannel,
 	type ChatInputCommandInteraction,
 } from 'discord.js';
+import { sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Command, DiscordHandler, HandlerType } from 'fonzi2';
 import Container from 'typedi';
 import { Database } from '../../database/connect';
 import { SubmissionsTable } from '../../database/models/submission';
 import { isImageUrl } from '../../utils/url.utils';
-import { sql } from 'drizzle-orm';
 
 export class CommandsHandler extends DiscordHandler {
 	public readonly type = HandlerType.commandInteraction;
@@ -67,6 +67,16 @@ export class CommandsHandler extends DiscordHandler {
 					ephemeral: true,
 				});
 			}
+
+			const thread = await (
+				interaction.channel as BaseGuildTextChannel
+			).threads.create({
+				name: `Dish submission - ${submitter}`,
+				type: ChannelType.PublicThread,
+			});
+			await thread.send(image);
+			await thread.send(ingredients);
+
 			const res = await this.db
 				.insert(SubmissionsTable)
 				.values({
@@ -74,19 +84,15 @@ export class CommandsHandler extends DiscordHandler {
 					ingredients,
 					submitter,
 					submitterId,
+					channel: interaction.channelId,
+					thread: thread.id,
 				})
 				.returning()
 				.execute();
 			const submissionId = String(res.at(0)?.id ?? '?');
-			const thread = await (
-				interaction.channel as BaseGuildTextChannel
-			).threads.create({
-				name: `Dish submission - ${submitter} [${submissionId}]`,
-				type: ChannelType.PublicThread,
+			await thread.edit({
+				name: `${thread.name} [${submissionId}]`,
 			});
-			await thread.send(submissionId);
-			await thread.send(image);
-			await thread.send(ingredients);
 		} catch (error) {
 			console.error(error);
 			await interaction.reply({
@@ -117,18 +123,37 @@ export class CommandsHandler extends DiscordHandler {
 				.where(sql`${SubmissionsTable.id} = ${submissionId}`)
 				.returning()
 				.execute();
-			if (!deletedSubmissions.at(0)) {
+			const deletedSubmission = deletedSubmissions.at(0);
+			if (!deletedSubmission) {
 				await interaction.reply({
 					content: 'There was no submission with that ID',
 					ephemeral: true,
 				});
+				return;
 			}
+			const thread = (
+				await (
+					this.client.channels.cache.find(
+						(ch) => ch.id === deletedSubmission.channel
+					) as BaseGuildTextChannel | undefined
+				)?.threads.fetchActive(true)
+			)?.threads.find((th) => th.id === deletedSubmission.thread);
+			if (!thread) {
+				await interaction.reply({
+					content:
+						'Submission deleted from DB but could not find related thread',
+					ephemeral: true,
+				});
+				return;
+			}
+			await thread.delete(`Unsubmitted by ${interaction.user.displayName}`);
 		} catch (error) {
 			console.error(error);
 			await interaction.reply({
 				content: 'Submission removal Failed',
 				ephemeral: true,
 			});
+			return;
 		}
 		await interaction.reply({
 			content: 'Submission removed!',

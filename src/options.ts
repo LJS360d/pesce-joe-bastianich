@@ -1,10 +1,11 @@
 import {
-	GatewayIntentBits as Intents,
-	type ClientOptions,
-	Partials,
 	ActivityType,
+	GatewayIntentBits as Intents,
+	Partials,
+	type ClientOptions,
 } from 'discord.js';
 import { Logger } from 'fonzi2';
+import env from './env';
 
 const options: ClientOptions = {
 	// allowedMentions: { parse: ['users', 'roles'] },
@@ -26,6 +27,7 @@ const options: ClientOptions = {
 		Intents.GuildMessageReactions,
 		Intents.GuildMessageTyping,
 		Intents.GuildMessages,
+		Intents.GuildMessagePolls,
 		// Intents.GuildModeration,
 		// Intents.GuildPresences,
 		// Intents.GuildScheduledEvents,
@@ -45,11 +47,16 @@ const options: ClientOptions = {
 		Logger.trace(JSON.stringify(obj, null, 2));
 		return obj;
 	},
-	/* presence: {
-		activities: [{ name: 'a dumb dev', type: ActivityType.Watching }],
+	presence: {
+		activities: [
+			{
+				name: `Giudicando i vostri piatti di merda [${env.NODE_ENV}]`,
+				type: ActivityType.Custom,
+			},
+		],
 		afk: false,
 		status: 'online',
-	}, */
+	},
 };
 
 export default options;

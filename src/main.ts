@@ -7,6 +7,7 @@ import { Database, connectPostgres } from './database/connect';
 import env from './env';
 import options from './options';
 import { Client } from 'discord.js';
+import startCrons from './jobs/cron.jobs';
 
 async function main() {
 	const db = await connectPostgres(env.POSTGRES_URL);
@@ -19,7 +20,7 @@ async function main() {
 		new ClientEventsHandler(getRegisteredCommands()),
 	]);
 	Container.set(Client<true>, client);
-
+	await startCrons();
 	process.on('uncaughtException', (err: any) => {
 		Logger.error(
 			`${err.name} - ${err.message}\n${err.stack || 'No stack trace available'}`

@@ -24,7 +24,7 @@ export function getUrlDomain(url: string) {
 
 export function isImageUrl(url: string) {
 	const { domain, extension } = extractUrlInfo(url);
-	const supportedExtensions = ['.png', '.jpg', '.jpeg', '.webp'];
+	const supportedExtensions = ['.png', '.jpg', '.jpeg', '.webp', '.gif'];
 	const supportedDomains = ['imgur.com'];
 	if (domain && extension)
 		return (

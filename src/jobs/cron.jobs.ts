@@ -1,35 +1,15 @@
-import { Client, type GuildTextBasedChannel } from 'discord.js';
-import Container from 'typedi';
-import { Database } from '../database/connect';
-import { ChannelsTable } from '../database/models/channel';
-import { SubmissionsTable } from '../database/models/submission';
+import { CronJob } from 'cron';
+import { createPoll } from './create-poll';
 
-export async function createPoll() {
-	const client = Container.get(Client<true>);
-	const db = Container.get(Database).instance;
-	const channelIds = (
-		await db
-			.select({
-				id: ChannelsTable.id,
-			})
-			.from(ChannelsTable)
-			.execute()
-	).map(({ id }) => id);
-
-	const pollChannels = Array.from(client.channels.cache.values()).filter((ch) =>
-		channelIds.includes(ch.id)
-	) as GuildTextBasedChannel[];
-	const submissions = await db.select().from(SubmissionsTable).execute();
-	for (const channel of pollChannels) {
-		channel.send({
-			poll: {
-				question: { text: 'Votate il favorito' },
-				answers: submissions.map(({ submitter }) => ({
-					text: submitter,
-				})),
-				duration: 12,
-				allowMultiselect: false,
-			},
-		});
-	}
+async function startCrons() {
+	const thursday0800_createPoll = CronJob.from({
+		cronTime: '0 8 * * 4',
+		onTick: createPoll,
+		start: true,
+		timeZone: 'Europe/Rome',
+	});
+	// TODO add container DI for ServerSide monitoring
+	// Container.set(, thursday0800_createPoll, "")
 }
+
+export default startCrons;
