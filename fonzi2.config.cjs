@@ -4,7 +4,7 @@ module.exports = {
 		enabled: true,
 		levels: 'all',
 		remote: {
-			enabled: false,
+			enabled: process.env['NODE_ENV'] === 'production',
 			levels: 'all',
 		},
 		file: {
