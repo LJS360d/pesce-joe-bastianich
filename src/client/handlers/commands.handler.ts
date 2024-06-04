@@ -6,11 +6,10 @@ import {
 } from 'discord.js';
 import { sql } from 'drizzle-orm';
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { Command, DiscordHandler, HandlerType } from 'fonzi2';
+import { Command, DiscordHandler, HandlerType, Logger } from 'fonzi2';
 import Container from 'typedi';
 import { Database } from '../../database/connect';
 import { SubmissionsTable } from '../../database/models/submission';
-import { isImageUrl } from '../../utils/url.utils';
 
 export class CommandsHandler extends DiscordHandler {
 	public readonly type = HandlerType.commandInteraction;
@@ -31,29 +30,14 @@ export class CommandsHandler extends DiscordHandler {
 		description: 'submits a new dish poll option',
 		options: [
 			{
-				name: 'image',
-				description: 'the image link',
+				name: 'name',
+				description: 'name/description of the dish',
 				type: ApplicationCommandOptionType.String,
-				required: true,
-			},
-			{
-				name: 'ingredients',
-				description: 'the recipe ingredients',
-				type: ApplicationCommandOptionType.String,
-				max_length: 256,
-				required: true,
 			},
 		],
 	})
 	public async onSubmit(interaction: ChatInputCommandInteraction<'cached'>) {
-		const image = interaction.options.getString('image')!;
-		if (!isImageUrl(image)) {
-			return interaction.reply({
-				content: 'The image URL is not valid',
-				ephemeral: true,
-			});
-		}
-		const ingredients = interaction.options.getString('ingredients')!;
+		const name = interaction.options.getString('name');
 		const { displayName: submitter, id: submitterId } = interaction.user;
 		try {
 			const submissions = await this.db
@@ -71,17 +55,13 @@ export class CommandsHandler extends DiscordHandler {
 			const thread = await (
 				interaction.channel as BaseGuildTextChannel
 			).threads.create({
-				name: `Dish submission - ${submitter}`,
+				name: `${submitter}'s Submission - ${name}`,
 				type: ChannelType.PublicThread,
 			});
-			await thread.send(image);
-			await thread.send(ingredients);
-
 			const res = await this.db
 				.insert(SubmissionsTable)
 				.values({
-					image,
-					ingredients,
+					name,
 					submitter,
 					submitterId,
 					channel: interaction.channelId,
@@ -90,9 +70,15 @@ export class CommandsHandler extends DiscordHandler {
 				.returning()
 				.execute();
 			const submissionId = String(res.at(0)?.id ?? '?');
+			Logger.info(`Submission added: ${name} [${submissionId}]`);
 			await thread.edit({
 				name: `${thread.name} [${submissionId}]`,
 			});
+			thread.send(`<@${submitterId}> submitted: ${name}`);
+			// thread.send('Please send a picture of the dish and the ingredients here');
+			thread.send(
+				'Manda qui un immagine del piatto e la lista degli ingredienti'
+			);
 		} catch (error) {
 			console.error(error);
 			await interaction.reply({
@@ -148,7 +134,7 @@ export class CommandsHandler extends DiscordHandler {
 			}
 			await thread.delete(`Unsubmitted by ${interaction.user.displayName}`);
 		} catch (error) {
-			console.error(error);
+			Logger.error(JSON.stringify(error));
 			await interaction.reply({
 				content: 'Submission removal Failed',
 				ephemeral: true,
