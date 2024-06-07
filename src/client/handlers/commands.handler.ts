@@ -9,7 +9,7 @@ import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Command, DiscordHandler, HandlerType, Logger } from 'fonzi2';
 import Container from 'typedi';
 import { Database } from '../../database/connect';
-import { SubmissionsTable } from '../../database/models/submission';
+import { SubmissionsTable } from '../../database/schema/submission';
 
 export class CommandsHandler extends DiscordHandler {
 	public readonly type = HandlerType.commandInteraction;
