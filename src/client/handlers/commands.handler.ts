@@ -167,7 +167,6 @@ export class CommandsHandler extends DiscordHandler {
 	public async onSuggest(interaction: ChatInputCommandInteraction<'cached'>) {
 		const prompt = interaction.options.getString('ingredients')!;
 		await interaction.deferReply();
-		void interaction.channel?.sendTyping();
 		try {
 			const suggestion = await this.chefService.getSuggestion(prompt);
 			await this.db
@@ -179,14 +178,11 @@ export class CommandsHandler extends DiscordHandler {
 					userId: interaction.user.id,
 				})
 				.execute();
-			await interaction.reply(suggestion);
+			await interaction.editReply(`${suggestion}\n\nRichiesta:\n\`${prompt}\``);
 			return;
 		} catch (error) {
 			Logger.error(JSON.stringify(error));
-			await interaction.reply({
-				content: 'Suggestion Failed',
-				ephemeral: true,
-			});
+			await interaction.editReply("I couldn't get a suggestion for that");
 			return;
 		}
 	}
