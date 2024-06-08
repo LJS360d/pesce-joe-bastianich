@@ -10,14 +10,18 @@ import { Command, DiscordHandler, HandlerType, Logger } from 'fonzi2';
 import Container from 'typedi';
 import { Database } from '../../database/connect';
 import { SubmissionsTable } from '../../database/schema/submission';
+import ChefService from '../../services/chef.service';
+import { SuggestionsTable } from '../../database/schema/suggestions';
 
 export class CommandsHandler extends DiscordHandler {
 	public readonly type = HandlerType.commandInteraction;
 	readonly db: NodePgDatabase;
+	readonly chefService: ChefService;
 
 	constructor(private version: string) {
 		super();
 		this.db = Container.get(Database).instance;
+		this.chefService = Container.get(ChefService);
 	}
 
 	@Command({ name: 'version', description: 'returns the application version' })
@@ -145,5 +149,45 @@ export class CommandsHandler extends DiscordHandler {
 			content: 'Submission removed!',
 			ephemeral: true,
 		});
+	}
+
+	@Command({
+		name: 'suggest',
+		description: 'suggests a new dish based on given ingredients',
+		options: [
+			{
+				name: 'ingredients',
+				description: 'the ingredients for the dish (free prompt)',
+				type: ApplicationCommandOptionType.String,
+				required: true,
+				maxLength: 255,
+			},
+		],
+	})
+	public async onSuggest(interaction: ChatInputCommandInteraction<'cached'>) {
+		const prompt = interaction.options.getString('ingredients')!;
+		await interaction.deferReply();
+		void interaction.channel?.sendTyping();
+		try {
+			const suggestion = await this.chefService.getSuggestion(prompt);
+			await this.db
+				.insert(SuggestionsTable)
+				.values({
+					prompt,
+					result: suggestion,
+					user: interaction.user.displayName,
+					userId: interaction.user.id,
+				})
+				.execute();
+			await interaction.reply(suggestion);
+			return;
+		} catch (error) {
+			Logger.error(JSON.stringify(error));
+			await interaction.reply({
+				content: 'Suggestion Failed',
+				ephemeral: true,
+			});
+			return;
+		}
 	}
 }

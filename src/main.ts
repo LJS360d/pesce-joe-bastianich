@@ -8,6 +8,7 @@ import env from './env';
 import options from './options';
 import { Client } from 'discord.js';
 import startCrons from './jobs/cron.jobs';
+import ChefService from './services/chef.service';
 
 async function main() {
 	const db = await connectPostgres(env.POSTGRES_URL);
@@ -15,6 +16,7 @@ async function main() {
 		process.exit(1);
 	}
 	Container.set(Database, new Database(db!));
+	Container.set(ChefService, new ChefService());
 	const client = new PesceJoeBastianichClient(env.TOKEN, options, [
 		new CommandsHandler(env.VERSION),
 		new ClientEventsHandler(getRegisteredCommands()),
